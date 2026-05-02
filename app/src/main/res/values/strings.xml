@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">TakApp</string>
+    <string name="username_title">Username: </string>
+    <string name="password_title">Password: </string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="register">Register</string>
+    <string name="login">Login</string>
 </resources>
