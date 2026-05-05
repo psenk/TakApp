@@ -1,6 +1,7 @@
 package com.appproject.takapp
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -18,7 +19,7 @@ import java.net.URL
 
 class MainActivity : ComponentActivity() {
 
-    private val BASE_URL = "https://127.0.0.1:8787"
+    private val BASE_URL = "http://10.0.2.2:8787"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +42,8 @@ class MainActivity : ComponentActivity() {
             val password = passwordInput.text.toString().trim() // TODO: HASH THIS PASSWORD
 
             if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
@@ -51,7 +53,8 @@ class MainActivity : ComponentActivity() {
                     result.onSuccess { sessionToken ->
                         // TODO: save token
                         // TODO: navigate to next screen
-                        Toast.makeText(this@MainActivity, "Login successful", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Login successful", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     result.onFailure { error ->
                         Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
@@ -65,7 +68,8 @@ class MainActivity : ComponentActivity() {
             val password = passwordInput.text.toString() // TODO: HASH THIS PASSWORD
 
             if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
@@ -75,7 +79,11 @@ class MainActivity : ComponentActivity() {
                     result.onSuccess { sessionToken ->
                         // TODO: save token
                         // TODO: navigate to next screen
-                        Toast.makeText(this@MainActivity, "Registration successful", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Registration successful",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                     result.onFailure { error ->
                         Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
