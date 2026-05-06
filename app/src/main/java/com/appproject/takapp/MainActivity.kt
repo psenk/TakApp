@@ -1,7 +1,6 @@
 package com.appproject.takapp
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -17,9 +16,15 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
+
+/*
+- TODO: USE HTTPS!!!
+- TODO: stay logged in?
+ */
+
 class MainActivity : ComponentActivity() {
 
-    private val BASE_URL = "http://10.0.2.2:8787"
+    private val _baseUrl = "http://10.0.2.2:8787"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
         loginButton.setOnClickListener {
             val username = usernameInput.text.toString().trim()
-            val password = passwordInput.text.toString().trim() // TODO: HASH THIS PASSWORD
+            val password = passwordInput.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT)
@@ -64,8 +69,8 @@ class MainActivity : ComponentActivity() {
         }
 
         registerButton.setOnClickListener {
-            val username = usernameInput.text.toString()
-            val password = passwordInput.text.toString() // TODO: HASH THIS PASSWORD
+            val username = usernameInput.text.toString().trim()
+            val password = passwordInput.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT)
@@ -100,7 +105,7 @@ class MainActivity : ComponentActivity() {
 
     private suspend fun loginRequest(username: String, password: String): Result<String> {
         return try {
-            val url = URL("$BASE_URL/api/login")
+            val url = URL("$_baseUrl/api/login")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
@@ -130,7 +135,7 @@ class MainActivity : ComponentActivity() {
 
     private suspend fun registerRequest(username: String, password: String): Result<String> {
         return try {
-            val url = URL("$BASE_URL/api/register")
+            val url = URL("$_baseUrl/api/register")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
