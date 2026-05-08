@@ -1,10 +1,13 @@
 package com.appproject.takapp.ui.login
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.appproject.takapp.data.SessionStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -14,18 +17,26 @@ import java.net.URL
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val isLoading: Boolean = true, // checking for stored session key
+    val errorMessage: String? = null, // ? is nullable type, must be handled
     val isLoginSuccessful: Boolean = false
 )
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO: swap to HTTPS before release
     private val baseUrl = "http://10.0.2.2:8787"
 
+    private val sessionStore: SessionStore by lazy {
+        SessionStore(application)
+    }
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    init {
+        checkExistingSession()
+    }
 
     fun onUsernameChange(value: String) {
         _uiState.update { it.copy(username = value, errorMessage = null) }
@@ -44,12 +55,12 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch { // creating coroutine
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = loginRequest(username, password)
             result.fold(
-                onSuccess = { sessionToken ->
-                    // TODO: persist session token (e.g. DataStore)
+                onSuccess = { (sessionToken, expiresAt) ->
+                    sessionStore.saveSession(sessionToken, expiresAt)
                     _uiState.update { it.copy(isLoading = false, isLoginSuccessful = true) }
                 },
                 onFailure = { error ->
@@ -72,8 +83,8 @@ class LoginViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = registerRequest(username, password)
             result.fold(
-                onSuccess = { sessionToken ->
-                    // TODO: persist session token (e.g. DataStore)
+                onSuccess = { (sessionToken, expiresAt) ->
+                    sessionStore.saveSession(sessionToken, expiresAt)
                     _uiState.update { it.copy(isLoading = false, isLoginSuccessful = true) }
                 },
                 onFailure = { error ->
@@ -91,7 +102,18 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(isLoginSuccessful = false) }
     }
 
-    private suspend fun loginRequest(username: String, password: String): Result<String> {
+    private fun checkExistingSession() {
+        viewModelScope.launch {
+            val existingToken = sessionStore.validSessionToken.first()
+            if (existingToken != null) {
+                _uiState.update { it.copy(isLoading = false, isLoginSuccessful = true) }
+            } else {
+                _uiState.update { it.copy(isLoading = false)}
+            }
+        }
+    }
+
+    private suspend fun loginRequest(username: String, password: String): Result<Pair<String, Long>> {
         return try {
             val url = URL("$baseUrl/api/login")
             val connection = url.openConnection() as HttpURLConnection
@@ -109,7 +131,10 @@ class LoginViewModel : ViewModel() {
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
                 val response = connection.inputStream.bufferedReader().readText()
-                Result.success(JSONObject(response).getString("sessionToken"))
+                val json = JSONObject(response)
+                val token = json.getString("sessionToken")
+                val expiresAt = json.getLong("expiresAt")
+                Result.success(Pair(token, expiresAt))
             } else {
                 val error = connection.errorStream.bufferedReader().readText()
                 Result.failure(Exception(error))
@@ -119,7 +144,7 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    private suspend fun registerRequest(username: String, password: String): Result<String> {
+    private suspend fun registerRequest(username: String, password: String): Result<Pair<String, Long>> {
         return try {
             val url = URL("$baseUrl/api/register")
             val connection = url.openConnection() as HttpURLConnection
@@ -135,7 +160,10 @@ class LoginViewModel : ViewModel() {
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
                 val response = connection.inputStream.bufferedReader().readText()
-                Result.success(JSONObject(response).getString("sessionToken"))
+                val json = JSONObject(response)
+                val token = json.getString("sessionToken")
+                val expiresAt = json.getLong("expiresAt")
+                Result.success(Pair(token, expiresAt))
             } else {
                 val error = connection.errorStream.bufferedReader().readText()
                 Result.failure(Exception(error))

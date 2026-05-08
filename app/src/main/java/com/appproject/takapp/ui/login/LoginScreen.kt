@@ -1,5 +1,6 @@
 package com.appproject.takapp.ui.login
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,6 +69,13 @@ private fun LoginScreenContent(
     onForgotPasswordClick: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+
+    if (uiState.isLoading && uiState.username.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     Scaffold { innerPadding ->
         Column(
