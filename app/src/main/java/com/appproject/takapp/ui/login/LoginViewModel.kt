@@ -4,12 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.appproject.takapp.data.SessionStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -55,7 +57,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        viewModelScope.launch { // creating coroutine
+        viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = loginRequest(username, password)
             result.fold(
@@ -108,68 +110,77 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             if (existingToken != null) {
                 _uiState.update { it.copy(isLoading = false, isLoginSuccessful = true) }
             } else {
-                _uiState.update { it.copy(isLoading = false)}
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
-    private suspend fun loginRequest(username: String, password: String): Result<Pair<String, Long>> {
-        return try {
-            val url = URL("$baseUrl/api/login")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.doOutput = true
+    private suspend fun loginRequest(
+        username: String,
+        password: String
+    ): Result<Pair<String, Long>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$baseUrl/api/login")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
 
-            val body = JSONObject()
-            val credentials = JSONObject()
-            credentials.put("name", username)
-            credentials.put("auth", password)
-            body.put("credentials", credentials)
+                val body = JSONObject()
+                val credentials = JSONObject()
+                credentials.put("name", username)
+                credentials.put("auth", password)
+                body.put("credentials", credentials)
 
-            connection.outputStream.use { it.write(body.toString().toByteArray()) }
-
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().readText()
-                val json = JSONObject(response)
-                val token = json.getString("sessionToken")
-                val expiresAt = json.getLong("expiresAt")
-                Result.success(Pair(token, expiresAt))
-            } else {
-                val error = connection.errorStream.bufferedReader().readText()
-                Result.failure(Exception(error))
+                connection.outputStream.use { it.write(body.toString().toByteArray()) }
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    val json = JSONObject(response)
+                    val token = json.getString("sessionToken")
+                    val expiresAt = json.getLong("expiresAt")
+                    Result.success(Pair(token, expiresAt))
+                } else {
+                    val error = connection.errorStream.bufferedReader().readText()
+                    Result.failure(Exception(error))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
 
-    private suspend fun registerRequest(username: String, password: String): Result<Pair<String, Long>> {
-        return try {
-            val url = URL("$baseUrl/api/register")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.doOutput = true
+    private suspend fun registerRequest(
+        username: String,
+        password: String
+    ): Result<Pair<String, Long>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$baseUrl/api/register")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
 
-            val body = JSONObject()
-            body.put("name", username)
-            body.put("auth", password)
+                val body = JSONObject()
+                body.put("name", username)
+                body.put("auth", password)
 
-            connection.outputStream.use { it.write(body.toString().toByteArray()) }
+                connection.outputStream.use { it.write(body.toString().toByteArray()) }
 
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().readText()
-                val json = JSONObject(response)
-                val token = json.getString("sessionToken")
-                val expiresAt = json.getLong("expiresAt")
-                Result.success(Pair(token, expiresAt))
-            } else {
-                val error = connection.errorStream.bufferedReader().readText()
-                Result.failure(Exception(error))
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    val json = JSONObject(response)
+                    val token = json.getString("sessionToken")
+                    val expiresAt = json.getLong("expiresAt")
+                    Result.success(Pair(token, expiresAt))
+                } else {
+                    val error = connection.errorStream.bufferedReader().readText()
+                    Result.failure(Exception(error))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.appproject.takapp.ui.login
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -71,6 +72,7 @@ private fun LoginScreenContent(
     val focusManager = LocalFocusManager.current
 
     if (uiState.isLoading && uiState.username.isEmpty()) {
+
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
