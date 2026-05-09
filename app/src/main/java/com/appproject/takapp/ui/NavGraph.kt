@@ -9,6 +9,7 @@ import com.appproject.takapp.ui.login.LoginScreen
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Home : Screen("home")
+    data object Settings : Screen("settings")
     // TODO: add more screens
 }
 
@@ -27,7 +28,16 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             )
         }
         composable(Screen.Home.route) {
-            HomeScreen()
+            HomeScreen(
+                onLogoutSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen()
         }
     }
 }
