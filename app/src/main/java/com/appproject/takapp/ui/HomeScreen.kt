@@ -23,6 +23,10 @@ import com.appproject.takapp.ui.theme.TakAppTheme
 
 @Composable
 fun HomeScreen(
+    onResumeGameClick: () -> Unit,
+    onCreateGameClick: () -> Unit,
+    onGameHistoryClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     onLogoutSuccess: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -37,10 +41,10 @@ fun HomeScreen(
 
     HomeScreenContent(
         uiState = uiState,
-        onResumeGameClick = viewModel::onResumeGameClick,
-        onCreateGameClick = viewModel::onCreateGameClick,
-        onGameHistoryClick = viewModel::onGameHistoryClick,
-        onSettingsClick = viewModel::onSettingsClick,
+        onResumeGameClick = onResumeGameClick,
+        onCreateGameClick = onCreateGameClick,
+        onGameHistoryClick = onGameHistoryClick,
+        onSettingsClick = onSettingsClick,
         onLogoutClick = viewModel::onLogoutClick
     )
 }
@@ -80,7 +84,13 @@ private fun HomeScreenContent(
                 )
             }
 
-            CreateResumeButton(uiState.hasActiveGames, onResumeGameClick)
+            Button(
+                onClick = onResumeGameClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState.hasActiveGames,
+            ) {
+                Text("Resume Game")
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -121,20 +131,24 @@ private fun HomeScreenContent(
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun CreateResumeButton(enabled: Boolean, onResumeGameClick: () -> Unit) {
-    Button(
-        onClick = onResumeGameClick,
-        modifier = Modifier.fillMaxWidth(),
-        enabled = enabled,
-    ) {
-        Text("Resume Game")
+fun HomeScreenPreview() {
+    TakAppTheme {
+        HomeScreenContent(
+            uiState = HomeUiState(hasActiveGames = true),
+            onResumeGameClick = {},
+            onCreateGameClick = {},
+            onGameHistoryClick = {},
+            onSettingsClick = {},
+            onLogoutClick = {}
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
+fun HomeScreenPreviewNoActiveGames() {
     TakAppTheme {
         HomeScreenContent(
             uiState = HomeUiState(),

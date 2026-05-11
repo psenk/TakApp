@@ -25,10 +25,10 @@
     </application>
 </manifest>
 
-<!--
-AndroidManifest.xml is the app's contract with the operating system.
-- Declares app's identity
-- Registers app components
-- Declares app permissions
-- Defines entry points
--->
+    <!--
+    AndroidManifest.xml is the app's contract with the operating system.
+    - Declares app's identity
+    - Registers app components
+    - Declares app permissions
+    - Defines entry points
+    -->
