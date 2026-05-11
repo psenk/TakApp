@@ -3,7 +3,9 @@ package com.appproject.takapp.ui.login
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.appproject.takapp.data.Constants
 import com.appproject.takapp.data.SessionStore
+import com.appproject.takapp.data.UserStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +33,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val sessionStore: SessionStore by lazy {
         SessionStore(application)
+    }
+
+    private val userStore: UserStore by lazy {
+        UserStore(application)
     }
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -121,7 +127,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     ): Result<Pair<String, Long>> {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("$baseUrl/api/login")
+                val url = URL("${Constants.BASE_URL}/api/login")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")
@@ -156,7 +162,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     ): Result<Pair<String, Long>> {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("$baseUrl/api/register")
+                val url = URL("${Constants.BASE_URL}/api/login")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")

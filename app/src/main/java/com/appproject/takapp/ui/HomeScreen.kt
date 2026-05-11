@@ -36,6 +36,7 @@ fun HomeScreen(
     }
 
     HomeScreenContent(
+        uiState = uiState,
         onResumeGameClick = viewModel::onResumeGameClick,
         onCreateGameClick = viewModel::onCreateGameClick,
         onGameHistoryClick = viewModel::onGameHistoryClick,
@@ -46,6 +47,7 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreenContent(
+    uiState: HomeUiState,
     onResumeGameClick: () -> Unit,
     onCreateGameClick: () -> Unit,
     onGameHistoryClick: () -> Unit,
@@ -68,12 +70,17 @@ private fun HomeScreenContent(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            Button(
-                onClick = onResumeGameClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Resume Game")
+            // error handling
+            if (uiState.errorMessage != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = uiState.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
+
+            CreateResumeButton(uiState.hasActiveGames, onResumeGameClick)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -114,11 +121,23 @@ private fun HomeScreenContent(
     }
 }
 
+@Composable
+private fun CreateResumeButton(enabled: Boolean, onResumeGameClick: () -> Unit) {
+    Button(
+        onClick = onResumeGameClick,
+        modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
+    ) {
+        Text("Resume Game")
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     TakAppTheme {
         HomeScreenContent(
+            uiState = HomeUiState(),
             onResumeGameClick = {},
             onCreateGameClick = {},
             onGameHistoryClick = {},
