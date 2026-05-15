@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.appproject.takapp.data.Constants
 import com.appproject.takapp.data.SessionStore
-import com.appproject.takapp.data.UserStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,10 +32,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val sessionStore: SessionStore by lazy {
         SessionStore(application)
-    }
-
-    private val userStore: UserStore by lazy {
-        UserStore(application)
     }
 
     private val _uiState = MutableStateFlow(LoginUiState())
